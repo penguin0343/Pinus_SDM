@@ -387,8 +387,4 @@ for (scen in scenarios) {
   }
 }
 
-# Export environmental values at presence points
-pinus_henryi_env_vals <- as.matrix(na.omit(raster::extract(predictors_final, pinus_henryi_occ)))
-openxlsx::write.xlsx(as.data.frame(pinus_henryi_env_vals), file = file.path(dir_data, "Pinus_henryi_env.xlsx"), overwrite = TRUE)
 
-cat("\nPinus henryi modeling workflow completed successfully!\n")
