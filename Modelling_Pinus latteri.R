@@ -1,7 +1,7 @@
 # ==============================================================================
 # Script: Modelling_Pinus latteri.R
 # Purpose: Complete SDM Workflow for Pinus latteri in Vietnam:
-#          1. Background point generation (buffer sampling)
+#          1. Background point generation
 #          2. Environmental variable multicollinearity evaluation
 #          3. Model calibration & cross-validation with ENMeval
 #          4. Final MaxEnt model fitting & projection (Current, 2070 SSP1-2.6 & SSP5-8.5)
@@ -26,11 +26,9 @@ suppressPackageStartupMessages({
   library(openxlsx)
 })
 
-options(java.parameters = "-Xmx32g")
-
 # Global CRS and directories
 latlong <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-dir_base       <- "E:/OneDrive/2024/DTCSCL_2024/Modelling"
+dir_base       <- "E:/Modelling"
 dir_data       <- file.path(dir_base, "Data")
 dir_env_curr   <- file.path(dir_base, "Enviromental/current")
 dir_env_2070   <- file.path(dir_base, "Enviromental/2070")
@@ -38,10 +36,6 @@ dir_maps       <- file.path(dir_base, "maps")
 dir_out_maps   <- file.path(dir_base, "output_maps")
 dir_maxent_out <- file.path(dir_base, "Maxent_responses/Pinus_latteri")
 dir_figures    <- file.path(dir_base, "Figures")
-
-if (!dir.exists(dir_out_maps))   dir.create(dir_out_maps, recursive = TRUE)
-if (!dir.exists(dir_maxent_out)) dir.create(dir_maxent_out, recursive = TRUE)
-if (!dir.exists(dir_figures))    dir.create(dir_figures, recursive = TRUE)
 
 selected_environment <- c('bio2','bio4','bio5','bio13','bio18','bio19','slope','evergreen_forest','soil','SOC')
 
@@ -51,20 +45,7 @@ vn_raster <- raster::raster(file.path(dir_maps, "VN_raster.tif"))
 # ==============================================================================
 # SECTION 1: BACKGROUND POINT GENERATION
 # ==============================================================================
-cat(">> Generating background points within geographic buffer...\n")
-elevation <- raster::raster(file.path(dir_env_curr, "elevation.tif"))
-occ_raw <- openxlsx::read.xlsx(file.path(dir_data, "Pinus latteri_thin.xlsx"), sheet = 1)
-
-pinus_latteri_sp <- occ_raw
-coordinates(pinus_latteri_sp) <- ~ Longitude + Latitude
-crs(pinus_latteri_sp) <- latlong
-
-pinus_latteri_sf <- sf::st_as_sf(pinus_latteri_sp)
-pinus_latteri_buffer <- sf::st_buffer(pinus_latteri_sf, dist = 100000) # 100 km buffer
-elevation_buffer <- raster::mask(elevation, pinus_latteri_buffer)
-
-set.seed(42)
-backg_pts <- dismo::randomPoints(elevation_buffer, 10000)
+backg_pts <- dismo::randomPoints(vn_raster, 10000)
 write.csv(backg_pts, file = file.path(dir_data, "pinus_latteri_backg.csv"), row.names = FALSE)
 
 # ==============================================================================
@@ -122,7 +103,7 @@ res <- ENMeval::ENMevaluate(
   numCores = 1
 )
 
-# Extract environmental data per fold and compute TSS and Kappa metrics
+# Extract environmental data per fold and compute TSS metric
 occ_env_eval <- as.data.frame(raster::extract(predictors_crop, pinus_latteri_occ))
 bg_env_eval  <- as.data.frame(raster::extract(predictors_crop, backg_eval))
 fold_ids <- sort(unique(res@occs.grp))
@@ -150,8 +131,6 @@ for (k in fold_ids) {
 res_df <- res@results
 all_tss_avg <- numeric(nrow(res_df))
 all_tss_sd  <- numeric(nrow(res_df))
-all_kappa_avg <- numeric(nrow(res_df))
-all_kappa_sd  <- numeric(nrow(res_df))
 all_fold_eval_list <- list()
 
 for (i in 1:nrow(res_df)) {
@@ -166,8 +145,7 @@ for (i in 1:nrow(res_df)) {
   f_classes <- paste(names(f_args)[unlist(f_args)], collapse = "")
   if (f_classes == "") f_classes <- "lq"
   
-  f_tss   <- numeric(length(fold_ids))
-  f_kappa <- numeric(length(fold_ids))
+  f_tss <- numeric(length(fold_ids))
   
   for (idx in seq_along(fold_ids)) {
     k  <- fold_ids[idx]
@@ -189,33 +167,28 @@ for (i in 1:nrow(res_df)) {
       
       if (length(v_p) > 0 && length(v_a) > 0) {
         ev <- dismo::evaluate(p = v_p, a = v_a)
-        f_tss[idx]   <- max(ev@TPR + ev@TNR - 1, na.rm = TRUE)
-        f_kappa[idx] <- max(ev@kappa, na.rm = TRUE)
+        f_tss[idx] <- max(ev@TPR + ev@TNR - 1, na.rm = TRUE)
       } else {
-        f_tss[idx] <- NA; f_kappa[idx] <- NA
+        f_tss[idx] <- NA
       }
     } else {
-      f_tss[idx] <- NA; f_kappa[idx] <- NA
+      f_tss[idx] <- NA
     }
   }
   
-  all_tss_avg[i]   <- mean(f_tss, na.rm = TRUE)
-  all_tss_sd[i]    <- sd(f_tss, na.rm = TRUE)
-  all_kappa_avg[i] <- mean(f_kappa, na.rm = TRUE)
-  all_kappa_sd[i]  <- sd(f_kappa, na.rm = TRUE)
+  all_tss_avg[i] <- mean(f_tss, na.rm = TRUE)
+  all_tss_sd[i]  <- sd(f_tss, na.rm = TRUE)
   
   all_fold_eval_list[[curr_tune]] <- data.frame(
     fold = as.character(fold_ids),
     TSS_max = as.numeric(f_tss),
-    Kappa_max = as.numeric(f_kappa),
     stringsAsFactors = FALSE
   )
 }
 
-res@results$tss.val.avg   <- round(all_tss_avg, 4)
-res@results$tss.val.sd    <- round(all_tss_sd, 4)
-res@results$kappa.val.avg <- round(all_kappa_avg, 4)
-res@results$kappa.val.sd  <- round(all_kappa_sd, 4)
+res@results$tss.val.avg <- round(all_tss_avg, 4)
+res@results$tss.val.sd  <- round(all_tss_sd, 4)
+res@results <- res@results %>% dplyr::select(-contains("cbi"), -starts_with("or."))
 
 best_tune <- res@results %>%
   filter(auc.val.avg == max(auc.val.avg, na.rm = TRUE)) %>%
@@ -252,14 +225,14 @@ fold_res$fold <- as.character(fold_res$fold)
 fold_summary <- fold_counts %>%
   left_join(fold_res, by = "fold") %>%
   left_join(all_fold_eval_list[[best_tune]], by = "fold") %>%
-  dplyr::select(fold, train_occ, test_occ, train_bg, test_bg, tune.args, auc.val, TSS_max, Kappa_max, cbi.val, or.10p, or.mtp)
+  dplyr::select(fold, train_occ, test_occ, train_bg, test_bg, tune.args, auc.val, TSS_max)
 
 cat("\n=================== FOLD-LEVEL VALIDATION RESULTS ===================\n")
 print(fold_summary)
 
 # Save evaluation results
-openxlsx::write.xlsx(res@results, file = file.path(dir_data, "pinus_latteri_model_performance_26_8.xlsx"), overwrite = TRUE)
-openxlsx::write.xlsx(fold_summary, file = file.path(dir_data, "pinus_latteri_fold_performance_26_8.xlsx"), overwrite = TRUE)
+openxlsx::write.xlsx(res@results, file = file.path(dir_data, "pinus_latteri_model_performance.xlsx"), overwrite = TRUE)
+openxlsx::write.xlsx(fold_summary, file = file.path(dir_data, "pinus_latteri_fold_performance.xlsx"), overwrite = TRUE)
 
 # ==============================================================================
 # SECTION 4: FINAL MODEL FITTING & PREDICTION (CURRENT & FUTURE)
@@ -409,10 +382,4 @@ for (scen in scenarios) {
     raster::writeRaster(mess_gcm, filename = file.path(dir_out_maps, out_mess_name), format = "GTiff", overwrite = TRUE)
   }
 }
-
-# Export environmental values at presence points
-pinus_latteri_env_vals <- as.matrix(na.omit(raster::extract(predictors_final, pinus_latteri_occ)))
-openxlsx::write.xlsx(as.data.frame(pinus_latteri_env_vals), file = file.path(dir_data, "Pinus_latteri_env.xlsx"), overwrite = TRUE)
-
-cat("\nPinus latteri modeling workflow completed successfully!\n")
 

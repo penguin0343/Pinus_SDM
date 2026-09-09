@@ -16,7 +16,7 @@ cat("===========================================================================
 latlong <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
 # Base Directories
-dir_base    <- "E:/OneDrive/2024/DTCSCL_2024/Modelling"
+dir_base    <- "E:/Modelling"
 dir_env     <- file.path(dir_base, "Enviromental/current")
 dir_data    <- file.path(dir_base, "Data")
 dir_output  <- file.path(dir_base, "output_maps")

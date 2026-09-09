@@ -27,7 +27,7 @@ suppressPackageStartupMessages({
 # ==============================================================================
 # Thinning occurrence records to reduce spatial autocorrelation (5 km distance)
 
-data_dir <- "E:/OneDrive/2024/DTCSCL_2024/Modelling/Data"
+data_dir <- "E:/Modelling/Data"
 pinus_combine_file <- file.path(data_dir, "pinus_combine.xlsx")
 
 if (file.exists(pinus_combine_file)) {
@@ -72,8 +72,8 @@ species_names <- c("Pinus dalatensis", "Pinus krempfii", "Pinus latteri",
 clean_names   <- gsub(" ", "_", tolower(species_names))
 scenarios     <- c("current", "ssp126", "ssp585")
 gcms          <- c("GFDL-ESM4", "IPSL-CM6A-LR", "MPI-ESM1-2-HR", "MRI-ESM2-0", "UKESM1-0-LL")
-base_path     <- "E:/OneDrive/2024/DTCSCL_2024/Modelling/output_maps/"
-fig_dir       <- "E:/OneDrive/2024/DTCSCL_2024/Modelling/Figures"
+base_path     <- "E:/Modelling/output_maps/"
+fig_dir       <- "E:/Modelling/Figures"
 
 if (!dir.exists(fig_dir)) dir.create(fig_dir, recursive = TRUE)
 
@@ -156,7 +156,7 @@ ggsave(p_area, filename = file.path(fig_dir, "Pinus_area.jpg"), width = 12, heig
 # SECTION 3: PROPORTION OF SUITABLE HABITAT IN PROTECTED AREAS (%)
 # ==============================================================================
 
-vn_pas_path <- "E:/OneDrive/2024/DTCSCL_2024/Modelling/maps/VN_pas_raster.tif"
+vn_pas_path <- "E:/Modelling/maps/VN_pas_raster.tif"
 if (file.exists(vn_pas_path)) {
   vn_pas <- terra::rast(vn_pas_path)
   
@@ -249,7 +249,7 @@ if (file.exists(vn_pas_path)) {
 # SECTION 4: ELEVATION SHIFT ANALYSIS
 # ==============================================================================
 
-path_ele <- "E:/OneDrive/2024/DTCSCL_2024/Modelling/Enviromental/current/elevation.tif"
+path_ele <- "E:/Modelling/Enviromental/current/elevation.tif"
 
 if (file.exists(path_ele)) {
   elevation <- terra::rast(path_ele)
