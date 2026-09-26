@@ -1,31 +1,15 @@
-
-# ==============================================================================
-# Script: Modelling_Pinus dalatensis.R
-# Purpose: Complete SDM Workflow for Pinus dalatensis in Vietnam:
-#          1. Background point generation
-#          2. Environmental variable multicollinearity evaluation
-#          3. Model calibration & cross-validation with ENMeval
-#          4. Final MaxEnt model fitting & projection (Current, 2070 SSP1-2.6 & SSP5-8.5)
-#          5. Ensemble consensus forecasting (>= 3 GCMs)
-#          6. Range change dynamics mapping
-#          7. Variable contribution assessment
-#          8. Multivariate Environmental Similarity Surface (MESS) analysis
-# ==============================================================================
-
-suppressPackageStartupMessages({
-  library(sf)
-  library(raster)
-  library(terra)
-  library(dismo)
-  library(maxnet)
-  library(ENMeval)
-  library(dplyr)
-  library(tidyr)
-  library(ggplot2)
-  library(ggcorrplot)
-  library(readxl)
-  library(openxlsx)
-})
+library(sf)
+library(raster)
+library(terra)
+library(dismo)
+library(maxnet)
+library(ENMeval)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggcorrplot)
+library(readxl)
+library(openxlsx)
 
 # Global CRS and directories
 latlong <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")

@@ -1,17 +1,14 @@
-
-suppressPackageStartupMessages({
-  library(raster)
-  library(terra)
-  library(sf)
-  library(tmap)
-  library(openxlsx)
-  library(dplyr)
-  library(purrr)
-  library(ggplot2)
-  library(cowplot)
-  library(grid)
-  library(gridExtra)
-})
+library(raster)
+library(terra)
+library(sf)
+library(tmap)
+library(openxlsx)
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(cowplot)
+library(grid)
+library(gridExtra)
 
 # Base directory paths
 dir_base    <- "E:/Modelling"

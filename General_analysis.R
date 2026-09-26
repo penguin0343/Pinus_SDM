@@ -1,26 +1,14 @@
 
-# ==============================================================================
-# Script: Analysis.R
-# Purpose: Post-modeling analyses across 6 native Pinus species in Vietnam:
-#          1. Spatial thinning of occurrence records
-#          2. Range area calculation and comparison (Current vs SSPs)
-#          3. Proportion of suitable habitat in Protected Areas (PAs)
-#          4. Elevational shift analysis
-#          5. Absolute suitable habitat area in Protected Areas (PAs)
-# ==============================================================================
-
-suppressPackageStartupMessages({
-  library(dplyr)
-  library(purrr)
-  library(stringr)
-  library(tidyr)
-  library(ggplot2)
-  library(scales)
-  library(terra)
-  library(raster)
-  library(spThin)
-  library(openxlsx)
-})
+library(dplyr)
+library(purrr)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+library(scales)
+library(terra)
+library(raster)
+library(spThin)
+library(openxlsx)
 
 # ==============================================================================
 # SECTION 1: SPATIAL THINNING OF OCCURRENCE RECORDS

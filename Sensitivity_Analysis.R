@@ -1,17 +1,12 @@
+library(raster)
+library(terra)
+library(dismo)
+library(openxlsx)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
 
-suppressPackageStartupMessages({
-  library(raster)
-  library(terra)
-  library(dismo)
-  library(openxlsx)
-  library(ggplot2)
-  library(dplyr)
-  library(tidyr)
-})
-
-cat("==============================================================================\n")
-cat("Starting Sensitivity & Robustness Analysis (Schoener's D) for All 6 Species\n")
-cat("==============================================================================\n\n")
+#"Starting Sensitivity & Robustness Analysis (Schoener's D) for All 6 Species\n")
 
 latlong <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
